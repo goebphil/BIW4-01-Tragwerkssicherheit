@@ -10,7 +10,7 @@ A = [3.77 3.77 3.77 3.77 3.77 4.70 3.77 3.77 3.77 5.74] * 10^-3
 #Flächenträgheitsmoment
 I = [1.46 1.46 1.46 1.46 1.46 1.78 1.46 1.46 1.46 2.10] * 10^-5
 #Länge
-l = [5.6 4.2 4.2 7.0 4.2 sqrt(35.28) 5.6 4.2 7.0 4.2]
+L = [5.6 4.2 4.2 7.0 4.2 sqrt(35.28) 5.6 4.2 7.0 4.2]
 
 #Stabkräfte (V=1)
 N = [0 1 0 1.25 -0.75 -1.414 -1 0.75 0 -1.175]
@@ -27,71 +27,119 @@ x02 = 19.9e4
 
 #leere Arrays
 cj = zeros(10)
-x01 = zeros(10)
-Pf = zeros(10)
-f1_array = zeros(10)
-F_min_array = zeros(10)
-untere_Grenze = zeros(10)
-Pf_ges  = 0
+Pfa = zeros(10)
+Pfb = zeros(10)
+Pfc = zeros(10)
+PfcII = zeros(10)
+cjk = zeros(10)
+kj = zeros(10)
+Pfa_ges = 0
+Pfb_ges  = 0
+Pfc_ges = 0
+
 #Koeffizienten cj
 for i = 1:10
-    cj[i] = abs(N[i]/A[i])
+    cj[i] = -abs(N[i]/A[i])
+    if N[i] < 0
+        cjk[i] = -abs(N[i])
+        kj[i] = E*I[i]*pi^2/L[i]^2
+    end
 end
-cj = - cj
+
 println("cj: ",cj)
+println("cjk: ",cjk)
+println("kj: ", kj)
 println()
 
 
 #Werte a und b
 a = 1/sigma_x1*pi/sqrt(6)
-b = muh_x1 - 0.5571/a
+b = muh_x1 - 0.5772/a
 
 println("a: ",a,"  b: ", b)
 
 
-
-#Funktionen f1_x1 und F_min_x1
-
-#belegen des arrays x01
-for i = 1:10
-    if cj[i] == 0
-        x01[i] = 0
-    else
-        x01[i] = -x02/cj[i]
-    end
-end
-println("x01: ", x01)
-println()
-
 #Berechnung von sigma_u und muh_u
 sigma_u = sqrt(log(1+(sigma_x2/(muh_x2-x02))^2))
-muh_u = log(muh_x2-x02)-sigma_u^2/2
+muh_u = log(sqrt((muh_x2-x02)/(1+sigma_x2/(muh_x2-x02))^2))
 println("sigma_u :",sigma_u,"   muh_u: ",muh_u)
 println()
 
-
+# Funktionen f_x1 und F_min und fk
 function f_x1(x)
     return f_x1 = a*exp(-a*(x-b)*exp(-a*(x-b)))
 end
 
 function F_min_x1(x)
-        z = (log(x-x02)-muh_x2)/sigma_x2
-        return pdf(Normal(), z)
+    z = (log(x-x02)-muh_u)/sigma_u
+    return pdf(Normal(), z)
+end
+
+function fk(k)
+   z = (-1/sigma_x1*(-k-muh_x1))
+   return pdf(Normal(),z)
+end
+
+function fkII(k)
+   return exp(-exp(0.0321*k+10.6))
+end
+
+#Aufgabe a)
+
+
+for i = 1:10
+    if cj[i] == -0.0
+        Pfa[i] = 0
+    else
+        Pfa[i], error = quadgk(x -> F_min_x1(-cj[i]*x)*f_x1(x),-x02/cj[i],1234)
+    end
 end
 
 for i = 1:10
+    if Pfa[i] == 0.0
 
+    else
+        global Pfa_ges = Pfa_ges + Pfa[i]
+    end
+end
+
+println("Aufgabe a)")
+println("Pfa: ", Pfa)
+println("Pfa_ges: ",Pfa_ges)
+println()
+
+#Aufgabe b)
+
+for i = 1:10
    if cj[i] == -0.0
 
    else
-       Pf[i], error = quadgk(x -> f_x1(x) * F_min_x1(-cj[i]*x), -x02/cj[i] , 1234)
-       global Pf_ges = Pf_ges + Pf[i]
+       Pfb[i], error = quadgk(x -> f_x1(x) * F_min_x1(-cj[i]*x), -x02/cj[i] , 10000)
+       global Pfb_ges = Pfb_ges + Pfb[i]
    end
-
-
 end
 
-println(Pf_ges)
-# result, error = quadgk(x -> f_x1(x) * F_min_x1(x), , Inf)
-# println("Ergebnis der Integration: ", result)
-# println("Fehler der Integration: ", error)
+println("Aufgabe b)")
+println("Pfb: ", Pfb)
+println("Pfb_ges: ", Pfb_ges)
+println()
+
+#Aufgabe c)
+
+for i = 1:10
+   if cjk[i] == 0
+       Pfc[i] = 0.0
+   else
+       k = kj[i]/cjk[i]
+       Pfc[i] = fk(k)
+       PfcII[i] = 1 - fkII(k)
+       global Pfc_ges = Pfc_ges + Pfc[i]
+   end
+end
+
+println("Aufgabe c)")
+println("Fall I")
+println("Pfc :", Pfc)
+println("Pfc_ges: ", Pfc_ges)
+println("Fall II")
+println("PfcII :",PfcII)
