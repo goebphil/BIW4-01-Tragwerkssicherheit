@@ -37,7 +37,10 @@ Pfa_ges = 0
 Pfb_ges  = 0
 Pfc_ges = 0
 
-#Koeffizienten cj
+##################################################
+
+
+#Koeffizienten cj und cjk/kj (Aufgabe c)
 for i = 1:10
     cj[i] = -abs(N[i]/A[i])
     if N[i] < 0
@@ -46,43 +49,43 @@ for i = 1:10
     end
 end
 
-println("cj: ",cj)
-println("cjk: ",cjk)
-println("kj: ", kj)
-println()
-
 
 #Werte a und b
 a = 1/sigma_x1*pi/sqrt(6)
 b = muh_x1 - 0.5772/a
 
-println("a: ",a,"  b: ", b)
-
-
 #Berechnung von sigma_u und muh_u
 sigma_u = sqrt(log(1+(sigma_x2/(muh_x2-x02))^2))
 muh_u = log(sqrt((muh_x2-x02)/(1+sigma_x2/(muh_x2-x02))^2))
-println("sigma_u :",sigma_u,"   muh_u: ",muh_u)
-println()
+
+##################################################
+
+
 
 # Funktionen f_x1 und F_min und fk
+#Aufgabe a) und b)
 function f_x1(x)
     return f_x1 = a*exp(-a*(x-b)*exp(-a*(x-b)))
 end
 
 function F_min_x1(x)
-    z = (log(x-x02)-muh_u)/sigma_u
+    z = (log(x-x02)-muh_u)/sigma_u #NV verteilt
     return pdf(Normal(), z)
 end
 
+#Aufgabe c) Fall I
 function fk(k)
-   z = (-1/sigma_x1*(-k-muh_x1))
+   z = (-1/sigma_x1*(-k-muh_x1)) #NV verteilt
    return pdf(Normal(),z)
 end
 
+#Aufgabe c) Fall II
 function fkII(k)
    return exp(-exp(0.0321*k+10.6))
 end
+
+##################################################
+
 
 #Aufgabe a)
 
@@ -103,11 +106,6 @@ for i = 1:10
     end
 end
 
-println("Aufgabe a)")
-println("Pfa: ", Pfa)
-println("Pfa_ges: ",Pfa_ges)
-println()
-
 #Aufgabe b)
 
 for i = 1:10
@@ -118,11 +116,6 @@ for i = 1:10
        global Pfb_ges = Pfb_ges + Pfb[i]
    end
 end
-
-println("Aufgabe b)")
-println("Pfb: ", Pfb)
-println("Pfb_ges: ", Pfb_ges)
-println()
 
 #Aufgabe c)
 
@@ -137,6 +130,25 @@ for i = 1:10
    end
 end
 
+
+##################################################
+#Ausgabe
+
+println("cj: ",cj)
+println("cjk: ",cjk)
+println("kj: ", kj)
+println()
+println("a: ",a,"  b: ", b)
+println("sigma_u :",sigma_u,"   muh_u: ",muh_u)
+println()
+println("Aufgabe a)")
+println("Pfa: ", Pfa)
+println("Pfa_ges: ",Pfa_ges)
+println()
+println("Aufgabe b)")
+println("Pfb: ", Pfb)
+println("Pfb_ges: ", Pfb_ges)
+println()
 println("Aufgabe c)")
 println("Fall I")
 println("Pfc :", Pfc)
