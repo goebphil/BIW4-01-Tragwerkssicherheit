@@ -69,7 +69,7 @@ function f_x1(x)
 end
 
 function F_min_x1(x)
-    z = (log(x-x02)-muh_u)/sigma_u #NV verteilt
+    z = (log(x-x02)-muh_u)/sigma_u #NN verteilt
     return pdf(Normal(), z)
 end
 
@@ -95,16 +95,11 @@ for i = 1:10
         Pfa[i] = 0
     else
         Pfa[i], error = quadgk(x -> F_min_x1(-cj[i]*x)*f_x1(x),-x02/cj[i],1234)
-    end
-end
-
-for i = 1:10
-    if Pfa[i] == 0.0
-
-    else
         global Pfa_ges = Pfa_ges + Pfa[i]
     end
 end
+
+
 
 #Aufgabe b)
 
@@ -133,7 +128,6 @@ end
 
 ##################################################
 #Ausgabe
-
 println("cj: ",cj)
 println("cjk: ",cjk)
 println("kj: ", kj)
